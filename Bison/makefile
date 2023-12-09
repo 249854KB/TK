@@ -13,7 +13,7 @@ PROJECT_NAME = Notacja_wyrostkowa
 TARGETS = $(patsubst $(SRC_DIR)%.c,$(DEST_DIR)%.o,$(SRCS))
 
 # Default target
-all: makedir flex build link
+all: makedir flex bison build link
 
 # Build rules for each source file
 $(DEST_DIR)emitter.o: $(SRC_DIR)emitter.c $(SRC_DIR)global.h
@@ -31,7 +31,7 @@ $(DEST_DIR)lexer.o: $(SRC_DIR)lexer.c
 $(DEST_DIR)main.o: $(SRC_DIR)main.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(DEST_DIR)parser.o: $(SRC_DIR)parser.c $(SRC_DIR)global.h
+$(DEST_DIR)parser.o: $(SRC_DIR)parser.c $(SRC_DIR)global.h $(SRC_DIR)parser.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEST_DIR)symbol.o: $(SRC_DIR)symbol.c $(SRC_DIR)global.h
@@ -52,6 +52,9 @@ makedir:
 clean:
 	rm -f $(DEST_DIR)/*.o $(PROJECT_NAME)
 	rm -f $(SRC_DIR)lexer.c
+	rm -f $(SRC_DIR)parser.c
+	rm -f $(SRC_DIR)parser.h
+	rm -f $(SRC_DIR)parser.output
 
 # Calling the default target on empty
 .PHONY: all
@@ -60,3 +63,8 @@ flex: $(DEST_DIR)lexer.c
 
 $(DEST_DIR)lexer.c: lexer.lex
 	flex -l -o $(SRC_DIR)lexer.c lexer.lex
+
+bison:$(DEST_DIR)parser.c
+
+$(DEST_DIR)parser.c: parser.y
+	bison -v -d -o $(SRC_DIR)parser.c parser.y
