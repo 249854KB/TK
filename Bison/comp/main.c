@@ -1,10 +1,8 @@
 #include "global.h"
-int
-main () 
+#include "parser.h"
+int main()
 {
-  init ();
-  parse ();
-  exit (0);
+  init();
+  parse();
+  exit(0);
 }
-
-

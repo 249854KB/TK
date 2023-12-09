@@ -3,6 +3,7 @@
 %option noinput
 %{
 #include "global.h"
+#include "parser.h"
 int p=0;
 int lineno = 1;
 int tokenval = NONE;

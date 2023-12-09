@@ -2,6 +2,7 @@
 #include "global.h"
 void yyerror(char const *s);
 int yylex();
+int lineno = 1;
 %}
 
 %token NUM
