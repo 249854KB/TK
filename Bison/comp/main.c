@@ -3,6 +3,6 @@
 int main()
 {
   init();
-  parse();
+  yyparse();
   exit(0);
 }
