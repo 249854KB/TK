@@ -1,4 +1,5 @@
 #include "global.h"
+#include "parser.h"
 struct entry keywords[] = {
     {"div", DIV},
     {"mod", MOD},

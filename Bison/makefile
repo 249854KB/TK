@@ -15,10 +15,6 @@ TARGETS = $(patsubst $(SRC_DIR)%.c,$(DEST_DIR)%.o,$(SRCS))
 # Default target
 all: makedir flex bison build link
 
-# Build rules for each source file
-$(DEST_DIR)emitter.o: $(SRC_DIR)emitter.c $(SRC_DIR)global.h
-	$(CC) -c $(CFLAGS) $< -o $@
-
 $(DEST_DIR)error.o: $(SRC_DIR)error.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
