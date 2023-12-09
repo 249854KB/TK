@@ -1,12 +1,12 @@
 /* Odtworzenie regół z pliku lexer.c */
+%option noyywrap
+%option noinput
 %{
 #include "global.h"
 int p=0;
 int lineno = 1;
 int tokenval = NONE;
 %}
- 
-%option noyywrap
 
 NUM   [0-9]+
 ALPHA   [a-zA-Z][a-zA-Z0-9]*
@@ -33,6 +33,14 @@ ALPHA   {
                 return symtable[p].token;
         }
 
+div     { 
+                tokenval=NONE; 
+                return DIV; 
+        }
+
+mod     {       tokenval=NONE; 
+                return MOD; 
+        }
 
 <<EOF>> {
             return DONE;
