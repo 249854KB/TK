@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Werror -Wno-error=unused-function
+CFLAGS = -Wall -Werror -Wno-error=unused-function -g
 
 SRC_DIR = comp/
 DEST_DIR = build/
