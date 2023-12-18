@@ -3,8 +3,8 @@
 %option noinput
 %{
 #include "global.h"
-#include "parser.h"
-int p=0;
+extern int insert (char s[], int tok);
+extern int lookup (char s[]);
 int lineno = 1;
 int tokenval = NONE;
 %}
@@ -14,14 +14,14 @@ ALPHA   [a-zA-Z][a-zA-Z0-9]*
 
 %%
 [ \t]   {
-                ;// Skip whitespaces and tabs
+                // Skip whitespaces and tabs
         }
 
 \n      {
                 lineno++;
         }
 
-NUM   {
+NUM     {
                 sscanf(yytext, "%d", &tokenval);
                 return NUM;
         }

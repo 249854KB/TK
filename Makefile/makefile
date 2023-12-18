@@ -19,13 +19,13 @@ all: makedir build link
 $(DEST_DIR)emitter.o: $(SRC_DIR)emitter.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(DEST_DIR)error.o: $(SRC_DIR)error.c
+$(DEST_DIR)error.o: $(SRC_DIR)error.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEST_DIR)init.o: $(SRC_DIR)init.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(DEST_DIR)lexer.o: $(SRC_DIR)lexer.c
+$(DEST_DIR)lexer.o: $(SRC_DIR)lexer.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEST_DIR)main.o: $(SRC_DIR)main.c $(SRC_DIR)global.h
