@@ -31,7 +31,7 @@ $(DEST_DIR)lexer.c: lexer.lex
 bison:$(DEST_DIR)parser.c
 
 $(DEST_DIR)parser.c: parser.y
-	bison -v -d -o $(SRC_DIR)parser.c parser.y
+	bison -v -t -d -o $(SRC_DIR)parser.c parser.y
 
 # Updating SRCS and TARGETS
 update_sources:

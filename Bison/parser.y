@@ -14,7 +14,7 @@ int lineno = 1;
 
 S:
     %empty
-    | S expr ';';
+    | S expr ';' { printf("%d",$2); };
 
 expr: term
     | expr '+' term { printf("+\n"); }

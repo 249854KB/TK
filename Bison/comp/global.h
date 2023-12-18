@@ -26,3 +26,4 @@ void term();
 void factor();
 void match(int t);
 void emit(int t, int tval);
+int yylex_destroy();

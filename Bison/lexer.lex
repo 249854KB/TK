@@ -3,14 +3,10 @@
 %option noinput
 %{
 #include "global.h"
-extern int insert (char s[], int tok);
-extern int lookup (char s[]);
-int lineno = 1;
+#include "parser.h"
 int tokenval = NONE;
 %}
-
-NUM   [0-9]+
-ALPHA   [a-zA-Z][a-zA-Z0-9]*
+ 
 
 %%
 [ \t]   {
@@ -21,18 +17,18 @@ ALPHA   [a-zA-Z][a-zA-Z0-9]*
                 lineno++;
         }
 
-NUM     {
+[0-9]+  {
                 sscanf(yytext, "%d", &tokenval);
                 return NUM;
         }
 
-ALPHA   {
-                int p = lookup(yytext); 
-                if (p == 0)
-                        p = insert (yytext, ID); 
-                tokenval = p; 
-                return symtable[p].token;
-        }
+[a-zA-Z][a-zA-Z0-9]*   {
+                                int p = lookup(yytext); 
+                                if (p == 0)
+                                p = insert (yytext, ID); 
+                                tokenval = p; 
+                                return symtable[p].token;
+                        }
 
 div     { 
                 tokenval=NONE; 
