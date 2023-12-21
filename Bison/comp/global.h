@@ -6,7 +6,6 @@
 #define BSIZE 128
 #define NONE -10
 #define EOS '\0'
-#define DONE 260
 extern int tokenval;
 extern int lineno;
 struct entry

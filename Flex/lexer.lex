@@ -1,5 +1,4 @@
 /* Odtworzenie regół z pliku lexer.c */
-%option noyywrap
 %option noinput
 %{
 #include "global.h"
@@ -17,6 +16,14 @@ int tokenval = NONE;
 \n      {
                 lineno++;
         }
+div     { 
+                tokenval=NONE; 
+                return DIV; 
+        }
+
+mod     {       tokenval=NONE; 
+                return MOD; 
+        }
 
 [0-9]+  {
                 sscanf(yytext, "%d", &tokenval);
@@ -31,14 +38,6 @@ int tokenval = NONE;
                                 return symtable[p].token;
                         }
 
-div     { 
-                tokenval=NONE; 
-                return DIV; 
-        }
-
-mod     {       tokenval=NONE; 
-                return MOD; 
-        }
 
 <<EOF>> {
             return DONE;

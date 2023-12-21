@@ -1,10 +1,8 @@
 /* Odtworzenie regół z pliku lexer.c */
-%option noyywrap
 %option noinput
 %{
 #include "global.h"
 #include "parser.h"
-int tokenval = NONE;
 %}
  
 
@@ -18,33 +16,35 @@ int tokenval = NONE;
         }
 
 [0-9]+  {
-                sscanf(yytext, "%d", &tokenval);
+                sscanf(yytext, "%d", &yylval);
                 return NUM;
+        }
+
+div     { 
+                yylval=NONE; 
+                return DIV; 
+        }
+
+mod     {       yylval=NONE; 
+                return MOD; 
         }
 
 [a-zA-Z][a-zA-Z0-9]*   {
                                 int p = lookup(yytext); 
                                 if (p == 0)
                                 p = insert (yytext, ID); 
-                                tokenval = p; 
+                                yylval = p; 
                                 return symtable[p].token;
                         }
 
-div     { 
-                tokenval=NONE; 
-                return DIV; 
-        }
 
-mod     {       tokenval=NONE; 
-                return MOD; 
-        }
 
 <<EOF>> {
             return DONE;
         }
 
 .       {
-            tokenval = NONE;
+            yylval = NONE;
             return yytext[0];
         }
 %%

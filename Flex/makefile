@@ -40,15 +40,12 @@ build: $(DEST_DIR)lexer.o $(TARGETS)
 
 # Linker
 link: $(TARGETS)
-	$(CC) -o $(PROJECT_NAME) $(addprefix $(DEST_DIR), $(notdir $(TARGETS))) 
+	$(CC) -o $(PROJECT_NAME) $(addprefix $(DEST_DIR), $(notdir $(TARGETS))) -lfl
 
 $(DEST_DIR)emitter.o: $(SRC_DIR)emitter.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEST_DIR)error.o: $(SRC_DIR)error.c $(SRC_DIR)global.h
-	$(CC) -c $(CFLAGS) $< -o $@
-
-$(DEST_DIR)init.o: $(SRC_DIR)init.c $(SRC_DIR)global.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEST_DIR)lexer.o: $(SRC_DIR)lexer.c $(SRC_DIR)global.h

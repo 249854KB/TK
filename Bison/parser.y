@@ -9,12 +9,13 @@ int lineno = 1;
 %token DIV
 %token MOD
 %token ID
+%token DONE 0
 
 %%
 
 S:
     %empty
-    | S expr ';' { printf("%d",$2); };
+    | S expr ';';
 
 expr: term
     | expr '+' term { printf("+\n"); }
