@@ -6,3 +6,4 @@ Bison/comp/lexer.c
 Bison/comp/parser.c
 Bison/comp/parser.h
 Bison/comp/parser.output
+*.zip
