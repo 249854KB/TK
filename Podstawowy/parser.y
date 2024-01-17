@@ -43,16 +43,16 @@ program:
     PROGRAM ID 
     {
         symtable[$2].token = PROC;
-        wrtInstr("jump.i\t#program", "jump.i program");
+        writeCode("jump.i\t#program", "jump.i program");
     } 
     '(' program_arguments ')' ';'
     vars
     {
-        wrtLbl("program");
+        writeLbl("program");
     }
     BEG function_body END
     '.' DONE {
-        wrtInstr("exit\t","exit");
+        writeCode("exit\t","exit");
         return 0;
     };
     ;
@@ -186,6 +186,7 @@ void yyerror(char const *s){
 };
 
 
-const char* token_name(int token) {
-    return yytname[YYTRANSLATE(token)];
+const char *token_name(int token)
+{
+  return yytname[YYTRANSLATE(token)];
 }

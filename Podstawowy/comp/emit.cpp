@@ -36,12 +36,12 @@ std::string formatName(std::string name)
   return "$" + name;
 }
 
-void wrtInstr(std::string instr, std::string repr)
+void writeCode(std::string line, std::string additional_info)
 {
-  outb << "\t" << instr << "\t\t;" << repr << std::endl;
+  outb << "\t" << line << "\t\t;" << additional_info << std::endl;
 }
 
-void wrtLbl(std::string label)
+void writeLbl(std::string label)
 {
   outb << label + ":" << std::endl;
 }
@@ -49,138 +49,135 @@ void wrtLbl(std::string label)
 struct Expanded
 {
   int tt;
-  std::string st;
+  std::string st; // i or r
   symbol_t l;
   symbol_t r;
 };
 
-std::string tType(int t)
+std::string typeInAsm(int type)
 {
-  if (t == REAL)
+  if (type == REAL)
   {
     return "r";
   }
   return "i";
 }
 
-void emitIntToReal(symbol_t from, symbol_t to)
+void appendIntToReal(symbol_t from, symbol_t to)
 {
-  wrtInstr(
+  writeCode(
       "inttoreal.i\t" + format(from) + "," + format(to),
       "inttoreal.i\t" + formatName(from.name) + "," + formatName(to.name));
 }
 
-void emitRealToInt(symbol_t from, symbol_t to)
+void appendRealToInt(symbol_t from, symbol_t to)
 {
-  wrtInstr(
+  writeCode(
       "realtoint.r\t" + format(from) + "," + format(to),
       "realtoint.r\t" + formatName(from.name) + "," + formatName(to.name));
 }
 
 // casts right side to match left side
-Expanded expandAssign(symbol_t lvar, symbol_t rvar)
+Expanded expandAssign(symbol_t left_side, symbol_t right_side)
 {
   std::string stype;
   int ttype;
-  if (lvar.type == rvar.type)
+  if (left_side.type == right_side.type)
   {
-    stype = tType(lvar.type);
-    ttype = lvar.type;
+    stype = typeInAsm(left_side.type);
+    ttype = left_side.type;
   }
   else
   {
-    if (lvar.type == INT && rvar.type == REAL)
+    if (left_side.type == INT && right_side.type == REAL)
     {
       int temp = newTemp(INT);
-      stype = tType(INT);
+      stype = typeInAsm(INT);
       ttype = INT;
-      emitRealToInt(rvar, symtable[temp]);
-      rvar = symtable[temp];
+      appendRealToInt(right_side, symtable[temp]);
+      right_side = symtable[temp];
     }
-    else if (lvar.type == REAL && rvar.type == INT)
+    else if (left_side.type == REAL && right_side.type == INT)
     {
       int temp = newTemp(REAL);
-      stype = tType(REAL);
+      stype = typeInAsm(REAL);
       ttype = REAL;
-      emitIntToReal(rvar, symtable[temp]);
-      rvar = symtable[temp];
+      appendIntToReal(right_side, symtable[temp]);
+      right_side = symtable[temp];
     }
     else
     {
       yyerror(("Types " +
-               std::string(token_name(lvar.type)) + " and " +
-               std::string(token_name(rvar.type)) + " are incompatible.")
+               std::string(token_name(left_side.type)) + " and " +
+               std::string(token_name(right_side.type)) + " are incompatible.")
                   .c_str());
     }
   }
-  return {ttype, stype, lvar, rvar};
+  return {ttype, stype, left_side, right_side};
 }
 
-void appendAssign(symbol_t lvar, symbol_t rvar)
+void appendAssign(symbol_t left_side, symbol_t right_side)
 {
   // all different kinds of checks and casts
-  Expanded exp = expandAssign(lvar, rvar);
-  wrtInstr(
-      "mov." + exp.st + "\t" + format(exp.r) + "," + format(exp.l),
+  Expanded exp = expandAssign(left_side, right_side);
+  writeCode(
+      "mov." + exp.st + "\t" + format(exp.r) + "," + format(exp.l) + "\t",
       "mov." + exp.st + "\t" + formatName(exp.r.name) + "," + formatName(exp.l.name));
 }
 
-int shouldChange(symbol_t lvar, symbol_t rvar)
+int willChange(symbol_t left_side, symbol_t right_side)
 {
-  int tL = REAL, tR = REAL;
-  if (lvar.type == INT)
-    tL = INT;
-  if (rvar.type == INT)
-    tR = INT;
-
-  return tL == tR;
+  if (left_side.type == right_side.type)
+    return false;
+  else
+    return true;
 }
 
-Expanded expand(symbol_t lvar, symbol_t rvar)
+/**
+ * @brief Tworzy wynik operacji po prawej i lewej stronie
+ *
+ * @param left_side
+ * @param right_side
+ * @return Expanded
+ */
+Expanded expand(symbol_t left_side, symbol_t right_side)
 {
   std::string stype;
   int ttype;
-  if (shouldChange(lvar, rvar))
+  if (willChange(left_side, right_side))
   {
-    if (lvar.type != rvar.type)
+
+    if (left_side.type == INT && right_side.type == REAL)
     {
-      stype = tType(INT);
-      ttype = INT;
+      int temp = newTemp(REAL);
+      stype = typeInAsm(REAL);
+      ttype = REAL;
+      appendIntToReal(left_side, symtable[temp]);
+      left_side = symtable[temp];
+    }
+    else if (left_side.type == REAL && right_side.type == INT)
+    {
+      int temp = newTemp(REAL);
+      stype = typeInAsm(REAL);
+      ttype = REAL;
+      appendIntToReal(right_side, symtable[temp]);
+      right_side = symtable[temp];
     }
     else
     {
-      stype = tType(lvar.type);
-      ttype = lvar.type;
+      std::cout << printS(left_side) << "; " << printS(right_side) << std::endl;
+      yyerror(("Typy zmiennych " +
+               std::string(token_name(left_side.type)) + " i " +
+               std::string(token_name(right_side.type)) + " nie mogą zostać przypisane :=")
+                  .c_str());
     }
   }
   else
   {
-    if (lvar.type == INT && rvar.type == REAL)
-    {
-      int temp = newTemp(REAL);
-      stype = tType(REAL);
-      ttype = REAL;
-      emitIntToReal(lvar, symtable[temp]);
-      lvar = symtable[temp];
-    }
-    else if (lvar.type == REAL && rvar.type == INT)
-    {
-      int temp = newTemp(REAL);
-      stype = tType(REAL);
-      ttype = REAL;
-      emitIntToReal(rvar, symtable[temp]);
-      rvar = symtable[temp];
-    }
-    else
-    {
-      std::cout << printS(lvar) << "; " << printS(rvar) << std::endl;
-      yyerror(("Types " +
-               std::string(token_name(lvar.type)) + " and " +
-               std::string(token_name(rvar.type)) + " are incompatible.")
-                  .c_str());
-    }
+    stype = typeInAsm(left_side.type);
+    ttype = left_side.type;
   }
-  return {ttype, stype, lvar, rvar};
+  return {ttype, stype, left_side, right_side};
 }
 
 std::string addop(int op)
@@ -196,14 +193,14 @@ std::string addop(int op)
   }
 }
 
-int append3O(symbol_t lvar, int op, symbol_t rvar)
+int append3O(symbol_t left_side, int operacja, symbol_t right_side)
 {
-  Expanded exp = expand(lvar, rvar);
+  Expanded exp = expand(left_side, right_side);
   int result = newTemp(exp.tt);
-  wrtInstr(
-      addop(op) + exp.st + "\t" + format(exp.l) +
-          "," + format(exp.r) + "," + format(symtable[result]),
-      addop(op) + exp.st + "\t" + formatName(exp.l.name) +
+  writeCode(
+      addop(operacja) + exp.st + "\t" + format(exp.l) +
+          "," + format(exp.r) + "," + format(symtable[result]) + "\t",
+      addop(operacja) + exp.st + "\t" + formatName(exp.l.name) +
           "," + formatName(exp.r.name) + "," + formatName(symtable[result].name));
 
   return result;
@@ -224,14 +221,14 @@ std::string mulop(int op)
   }
 }
 
-int append2O(symbol_t lvar, int op, symbol_t rvar)
+int append2O(symbol_t left_side, int operacja, symbol_t right_side)
 {
-  Expanded exp = expand(lvar, rvar);
+  Expanded exp = expand(left_side, right_side);
   int result = newTemp(exp.tt);
-  wrtInstr(
-      mulop(op) + exp.st + "\t" + format(exp.l) +
-          "," + format(exp.r) + "," + format(symtable[result]),
-      mulop(op) + exp.st + "\t" + formatName(exp.l.name) +
+  writeCode(
+      mulop(operacja) + exp.st + "\t" + format(exp.l) +
+          "," + format(exp.r) + "," + format(symtable[result]) + "\t",
+      mulop(operacja) + exp.st + "\t" + formatName(exp.l.name) +
           "," + formatName(exp.r.name) + "," + formatName(symtable[result].name));
 
   return result;
@@ -251,36 +248,18 @@ std::string formatRef(symbol_t s)
   return "";
 }
 
-void appendWrite(symbol_t sym)
+void appendWrite(symbol_t symbolToWrite)
 {
-  wrtInstr(
-      "write." + tType(sym.type) + "\t" + format(sym),
-      "write." + tType(sym.type) + "\t" + formatName(sym.name));
+  writeCode(
+      "write." + typeInAsm(symbolToWrite.type) + "\t" + format(symbolToWrite) + "\t",
+      "write." + typeInAsm(symbolToWrite.type) + "\t" + formatName(symbolToWrite.name));
 }
 
-void appendRead(symbol_t sym)
+void appendRead(symbol_t symbolToRead)
 {
-  wrtInstr(
-      "read." + tType(sym.type) + "\t" + format(sym),
-      "read." + tType(sym.type) + "\t" + formatName(sym.name));
-}
-
-void startFuncEmittion()
-{
-  freezed = outb.str();
-  outb.str(std::string());
-}
-
-void endFuncEmittion(std::string enterOffset)
-{
-  wrtInstr("leave\t", "leave");
-  wrtInstr("return\t", "return");
-
-  funcbody = outb.str();
-  outb.str(std::string());
-  outb << freezed;
-  wrtInstr("enter.i\t#" + enterOffset + "\t", "enter.i\t#" + enterOffset);
-  outb << funcbody;
+  writeCode(
+      "read." + typeInAsm(symbolToRead.type) + "\t" + format(symbolToRead) + "\t",
+      "read." + typeInAsm(symbolToRead.type) + "\t" + formatName(symbolToRead.name));
 }
 
 void exportAsm(std::string fname)

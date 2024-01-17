@@ -1,6 +1,6 @@
 #include "global.h"
 
-int maptoopttoken(std::string yytext)
+int getOperationToken(std::string yytext)
 {
   if (yytext == "+")
     return ADD;

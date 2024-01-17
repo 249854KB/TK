@@ -6,4 +6,9 @@ Bison/comp/lexer.c
 Bison/comp/parser.c
 Bison/comp/parser.h
 Bison/comp/parser.output
+Podstawowy/build/*
+Podstawowy/comp/lexer.cpp
+Podstawowy/comp/parser.cpp
+Podstawowy/comp/parser.hpp
+Podstawowy/comp/parser.output
 *.zip

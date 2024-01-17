@@ -35,8 +35,8 @@ write       {return WRITE;}
 read        {return READ;}
 
 :=          {return ASSIGN;}
-{addop}     {yylval = maptoopttoken(yytext); return ADDOP;}
-{mulop}     {yylval = maptoopttoken(yytext); return MULOP;}
+{addop}     {yylval = getOperationToken(yytext); return ADDOP;}
+{mulop}     {yylval = getOperationToken(yytext); return MULOP;}
 
 {integer}   {yylval = insert(yytext, VAL, INT); return VAL;}
 {real}    {yylval = insert(yytext, VAL, REAL); return VAL;}

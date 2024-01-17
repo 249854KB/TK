@@ -1,7 +1,5 @@
 #include "global.h"
 
-symbol_t EMPTY_SYMBOL;
-
 std::vector<symbol_t> symtable;
 int tempCount = 0;
 int labelCount = 0;
@@ -27,18 +25,10 @@ void initSymtable()
   symtable.push_back(write);
 }
 
-int lookup(const std::string s)
+int lookup(const std::string name)
 {
   for (int p = symtable.size() - 1; p > 0; p--)
-    if (symtable[p].name == s)
-      return p;
-  return -1;
-}
-
-int lookup(std::string name, int token)
-{
-  for (int p = symtable.size() - 1; p > 0; p--)
-    if (symtable[p].name == name && symtable[p].token == token)
+    if (symtable[p].name == name)
       return p;
   return -1;
 }
@@ -49,32 +39,13 @@ int insertPlain(symbol_t sym)
   return symtable.size() - 1;
 }
 
-int insert(symbol_t sym)
+int insert(std::string name, int token, int type)
 {
-  int look = lookup(sym.name);
-  if (look >= 0)
-    return look;
-  return insertPlain(sym);
-}
-
-int insert(const std::string s, int tok)
-{
-  int look = lookup(s);
+  int look = lookup(name);
   if (look >= 0)
     return look;
   symbol_t sym;
-  sym.name = s;
-  sym.token = tok;
-  return insertPlain(sym);
-}
-
-int insert(std::string s, int token, int type)
-{
-  int look = lookup(s);
-  if (look >= 0)
-    return look;
-  symbol_t sym;
-  sym.name = s;
+  sym.name = name;
   sym.token = token;
   sym.type = type;
   return insertPlain(sym);
@@ -98,11 +69,6 @@ int newNum(std::string name, int type)
   return insert(name, VAL, type);
 }
 
-int REFSIZE = 4;
-int NONESIZE = 0;
-int INTSIZE = 4;
-int REALSIZE = 8;
-
 int sizeFromToken(int type)
 {
   return type == REAL ? 8 : 4;
@@ -113,12 +79,12 @@ int getSymbolSize(symbol_t symbol)
 
   if (symbol.token == VAR)
   {
-    if (symbol.type == INT)
-      return INTSIZE;
-    else if (symbol.type == REAL)
-      return REALSIZE;
+    if (symbol.type == REAL)
+      return 8;
+    else if (symbol.type == INT)
+      return 4;
   }
-  return NONESIZE;
+  return 0;
 }
 
 /* look into*/

@@ -7,34 +7,54 @@
 #include "symbol.h"
 #include "parser.hpp"
 
-// Sizes
-extern int NONESIZE;
-extern int INTSIZE;
-extern int REALSIZE;
+// Zliczanie + tabla symboli na extern
 
-// Zliczanie
 extern int errorno;
 extern int lineno;
-
 extern std::vector<symbol_t> symtable;
-extern symbol_t EMPTY_SYMBOL;
+
+// Czyszczenie pamięci
 
 int yylex_destroy();
 
-// symbol
-int insert(std::string, int, int);
-int insert(std::string, int);
-int insert(symbol_t);
-int lookup(std::string);
-int lookup(std::string name, int token);
+// Dodawanie i usuwanie z tablicy symboli
 
+/**
+ * @brief Wstawia nowy symbol do listy symboli
+ *
+ * @param name nazwa
+ * @param token token
+ * @param type int/real
+ * @return int id nowo powstałego symblu
+ */
+int insert(std::string name, int token, int type);
+
+/**
+ * @brief Zwaraca id na podstawie nazwy
+ *
+ * @param name nazwa
+ * @return int id /-1 jeśli nie znalezione
+ *
+ */
+int lookup(std::string name);
+
+/**
+ * @brief Inicjalizacja tablicy smboli
+ *
+ */
 void initSymtable();
-void printSymtable();
-int getAddress(std::string);
+
+/**
+ * @brief Zwraca adres po nazwie
+ *
+ * @param name nazwa
+ * @return int adres/ 0 domyślnie
+ *
+ */
+int getAddress(std::string name);
+
 int newTemp(int);
 int newNum(std::string, int);
-
-// lexer
 
 // parser
 int yyparse();
@@ -42,20 +62,46 @@ int yyparse();
 void yyerror(char const *);
 const char *token_name(int);
 
-// tokens
-int maptoopttoken(std::string);
+/**
+ * @brief Zwraca dokładny token operacji ogólnej (mul, add)
+ *
+ * @return int dokładny token
+ */
+int getOperationToken(std::string);
 
+/**
+ * @brief Wypluwa pełny kod do cmd
+ *
+ */
+void printSymtable();
+
+// Funkcje formatujące do wypluwania
 std::string format(symbol_t);
 std::string formatName(std::string);
-void wrtInstr(std::string, std::string);
-void wrtLbl(std::string);
-void emitIntToReal(symbol_t, symbol_t);
-void emitRealToInt(symbol_t, symbol_t);
 
-void appendAssign(symbol_t, symbol_t);
+/**
+ * @brief Wyrzuca linie kodu
+ *
+ * @param line Linia kodu
+ * @param additional_info wiadomość po średniku
+ */
+void writeCode(std::string line, std::string additional_info);
+
+/**
+ * @brief Wypisuje Label programu/funkcji w postaci label :
+ *
+ * @param label nazwa dpo wypisania
+ */
+void writeLbl(std::string label);
+
+// Appendowanie - pisanie write code
+
+void appendIntToReal(symbol_t from, symbol_t to);
+void appendRealToInt(symbol_t from, symbol_t to);
+void appendAssign(symbol_t left_side, symbol_t right_side);
 int append2O(symbol_t, int, symbol_t);
 int append3O(symbol_t, int, symbol_t);
-void appendWrite(symbol_t);
-void appendRead(symbol_t);
+void appendWrite(symbol_t symbolToWrite);
+void appendRead(symbol_t symbolToRead);
 
 void exportAsm(std::string);
