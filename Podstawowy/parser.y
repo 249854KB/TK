@@ -52,7 +52,7 @@ program:
     }
     BEG function_body END
     '.' DONE {
-        writeCode("exit\t","exit");
+        writeCode("exit\t\t","exit");
         return 0;
     };
     ;

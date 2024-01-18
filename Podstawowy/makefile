@@ -48,7 +48,7 @@ link: $(TARGETS)
 	$(CC) -o  $(PROJECT_NAME) $(addprefix $(DEST_DIR), $(notdir $(TARGETS))) -lfl
 
 
-$(DEST_DIR)emit.o: $(SRC_DIR)emit.cpp $(SRC_DIR)global.h $(SRC_DIR)parser.hpp
+$(DEST_DIR)emitter.o: $(SRC_DIR)emitter.cpp $(SRC_DIR)global.h $(SRC_DIR)parser.hpp
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEST_DIR)lexer.o: $(SRC_DIR)lexer.cpp $(SRC_DIR)global.h $(SRC_DIR)parser.hpp

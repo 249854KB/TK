@@ -76,8 +76,22 @@ int getOperationToken(std::string);
 void printSymtable();
 
 // Funkcje formatujące do wypluwania
-std::string format(symbol_t);
-std::string formatName(std::string);
+
+/**
+ * @brief Formatowanie symbolu pod assembler
+ *
+ * @param s symbol
+ * @return std::string postać w assemblerze
+ */
+std::string format(symbol_t s);
+
+/**
+ * @brief Dodaje $ do nazwy
+ *
+ * @param name nazwa
+ * @return std::string $nazwa
+ */
+std::string formatName(std::string name);
 
 /**
  * @brief Wyrzuca linie kodu
@@ -90,7 +104,7 @@ void writeCode(std::string line, std::string additional_info);
 /**
  * @brief Wypisuje Label programu/funkcji w postaci label :
  *
- * @param label nazwa dpo wypisania
+ * @param label nazwa do wypisania
  */
 void writeLbl(std::string label);
 
