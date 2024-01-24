@@ -110,8 +110,8 @@ void writeLbl(std::string label);
 
 // Appendowanie - pisanie write code
 
-void appendIntToReal(symbol_t from, symbol_t to);
-void appendRealToInt(symbol_t from, symbol_t to);
+int appendIntToReal(symbol_t from, symbol_t to);
+int appendRealToInt(symbol_t from, symbol_t to);
 void appendAssign(symbol_t left_side, symbol_t right_side);
 int append2O(symbol_t, int, symbol_t);
 int append3O(symbol_t, int, symbol_t);

@@ -54,7 +54,7 @@ int insert(std::string name, int token, int type)
 int newTemp(int type)
 {
   symbol_t t;
-  t.name = "t" + std::to_string(tempCount);
+  t.name = "$t" + std::to_string(tempCount);
   t.type = type;
   t.token = VAR;
   t.address = 0;
