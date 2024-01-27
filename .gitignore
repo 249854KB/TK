@@ -11,4 +11,9 @@ Podstawowy/comp/lexer.cpp
 Podstawowy/comp/parser.cpp
 Podstawowy/comp/parser.hpp
 Podstawowy/comp/parser.output
+Rozszerzony/build/*
+Rozszerzony/comp/lexer.cpp
+Rozszerzony/comp/parser.cpp
+Rozszerzony/comp/parser.hpp
+Rozszerzony/comp/parser.output
 *.zip
