@@ -69,15 +69,24 @@ std::string sign(int a)
 
 std::string format(symbol_t s)
 {
+  std::string output = "";
+  if (s.passed && s.global == context)
+  {
+    output += "*";
+  }
+  if (!s.global)
+  {
+    output += "BP" + sign(s.address);
+  }
   if (s.token == VAL || s.token == LABEL)
   {
     return "#" + s.name;
   }
-  else if (s.token == VAR)
+  else if (s.passed || s.token == VAR)
   {
-    return std::to_string(abs(s.address));
+    return output + std::to_string(abs(s.address));
   }
-  return "";
+  return output;
 }
 
 std::string formatName(std::string name)
@@ -167,7 +176,7 @@ int append3O(symbol_t left_side, int operacja, symbol_t right_side)
   symbol_t new_left_side = willChange(right_side, left_side);
 
   int result = newTemp(new_left_side.type);
-  writeCode(addop(operacja) + typeInAsm(new_left_side.type) + "\t" + format(new_left_side) + "," + format(right_side) + "," + format(symtable[result]) + "\t",
+  writeCode(addop(operacja) + typeInAsm(new_left_side.type) + "\t" + format(new_left_side) + "," + format(right_side) + "," + format(symtable[result]),
             addop(operacja) + typeInAsm(new_left_side.type) + "\t" + formatName(new_left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
 
   return result;
@@ -179,7 +188,7 @@ int append2O(symbol_t left_side, int operacja, symbol_t right_side)
   symbol_t new_left_side = willChange(right_side, left_side);
 
   int result = newTemp(new_left_side.type);
-  writeCode(mulop(operacja) + typeInAsm(new_left_side.type) + "\t" + format(new_left_side) + "," + format(right_side) + "," + format(symtable[result]) + "\t",
+  writeCode(mulop(operacja) + typeInAsm(new_left_side.type) + "\t" + format(new_left_side) + "," + format(right_side) + "," + format(symtable[result]),
             mulop(operacja) + typeInAsm(new_left_side.type) + "\t" + formatName(new_left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
 
   return result;
@@ -213,6 +222,35 @@ void appendRead(symbol_t symbolToRead)
             "read." + typeInAsm(symbolToRead.type) + "\t" + formatName(symbolToRead.name));
 }
 
+void appendPush(symbol_t arg, symbol_t expected)
+{
+
+  if (arg.token == VAL)
+  {
+    // Jest to wartość więc robimy mov na nową zmienną
+    int t = newTemp(expected.type);
+    symbol_t tSym = symtable[t];
+    writeCode("mov." + typeInAsm(arg.type) + "\t" + format(arg) + "," + format(tSym) + "\t",
+              "mov." + typeInAsm(tSym.type) + "\t" + formatName(arg.name) + "," + formatName(tSym.name));
+    arg = tSym;
+  }
+  else
+  {
+    // sprawdzamy czy się zmieni
+    symbol_t tSym = willChange(expected, arg);
+    arg = tSym;
+  }
+
+  std::string ref = "";
+  if (!arg.passed)
+  {
+    ref = "#";
+  }
+  writeCode(
+      "push.i\t" + ref + formatRef(arg) + "\t",
+      "push.i\t&" + arg.name);
+}
+
 // Export the generated assembly code to a file
 void exportAsm(std::string fname)
 {
@@ -221,4 +259,17 @@ void exportAsm(std::string fname)
   outFile.close();
 
   std::cout << outb.str() << std::endl;
+}
+
+int appendCall(std::string var)
+{
+  writeCode("call.i\t#" + var + "\t", "call.i\t&" + var);
+  return 0; // emit address of variable containing function result
+}
+
+void appendIncsp(int incsp)
+{
+  writeCode(
+      "incsp.i\t#" + std::to_string(incsp) + "\t",
+      "incsp.i\t" + std::to_string(incsp));
 }

@@ -26,7 +26,8 @@ int main(int argc, char **argv)
   else
   {
     cout << endl
-         << "\nZnaleziono błąd!!";
+         << "\nZnaleziono błąd!!" << endl;
+    printSymtable();
   }
 
   yylex_destroy();

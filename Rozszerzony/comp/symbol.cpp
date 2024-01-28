@@ -4,17 +4,25 @@ std::vector<symbol_t> symtable;
 int tempCount = 0;
 int labelCount = 0;
 
+int lookup(std::string name, int token)
+{
+  for (int p = symtable.size() - 1; p > 0; p--)
+    if (symtable[p].name == name && symtable[p].token == token)
+      return p;
+  return -1;
+}
+
 // manipulation
 void initSymtable()
 {
   symbol_t read;
   read.name = "read";
-  read.token = PROC;
+  read.token = PROCEDURE;
   read.type = NONE;
 
   symbol_t write;
   write.name = "write";
-  write.token = PROC;
+  write.token = PROCEDURE;
   write.type = NONE;
 
   symbol_t program;
@@ -33,6 +41,12 @@ int lookup(const std::string name)
   return -1;
 }
 
+/**
+ * @brief Wstawia symbol do tablicy symboli bez dodatkowej logiki
+ * @warning Bezpośrednie wstawienie
+ * @param sym
+ * @return int
+ */
 int insertPlain(symbol_t sym)
 {
   symtable.push_back(sym);
@@ -122,6 +136,8 @@ void printSymtable()
   {
     std::cout
         << std::setw(std::to_string(symtable.size()).length()) << i++ << " "
+        << std::setw(8) << (symbol.global ? "global" : "local")
+        << std::setw(5) << (symbol.passed ? "ref" : "")
         << std::setw(lenTok + 2) << token_name(symbol.token) << " "
         << std::setw(lenName + 2) << symbol.name << " "
         << std::setw(LenType + 2) << token_name(symbol.type)
@@ -129,4 +145,26 @@ void printSymtable()
         << ((symbol.token == VAR) ? "\t" + std::to_string(symbol.address) : "")
         << std::endl;
   }
+}
+
+symbol_t newArgument(int type)
+{
+  symbol_t sym;
+  sym.name = "argument";
+  sym.type = type;
+  sym.token = NONE;
+  sym.passed = false;
+  sym.global = true;
+  // sym.global = context();
+  sym.address = 0xFFFF;
+  return sym;
+}
+
+int insert(symbol_t sym)
+{
+  int look = lookup(sym.name);
+  // Sprawdzenie czy nie ma takiej zmiennej globalnej
+  if (look >= 0 && sym.global == symtable[look].global)
+    return look;
+  return insertPlain(sym);
 }

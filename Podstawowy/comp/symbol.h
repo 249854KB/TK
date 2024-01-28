@@ -20,11 +20,10 @@
  */
 struct symbol_t
 {
-  std::string name;                // Nazwa
-  int token;                       // Token
-  int type;                        // int/real
-  int address;                     // address
-  std::vector<symbol_t> arguments; // Value
+  std::string name; // Nazwa
+  int token;        // Token
+  int type;         // int/real
+  int address;      // address
 };
 
 #endif // SYMBOL_H_

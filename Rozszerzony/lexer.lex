@@ -27,6 +27,8 @@ var         {return VAR;}
 integer     {yylval = INT; return INT;}
 real        {yylval = REAL; return REAL;}
 
+procedure   {return PROCEDURE;}
+function    {return FUNCTION;}
 
 begin       {return BEG;}
 end         {return END;}

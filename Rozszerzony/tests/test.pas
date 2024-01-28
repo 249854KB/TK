@@ -1,11 +1,17 @@
 program example(input, output);
 var x, y: integer;
 var g,h:real;
+function f(a, b: real; c: integer):real;
+var q:integer;
+begin
+   q:=4;
+   f:=a+b*q
+end;
 
 begin
-  x:=0;
-  y:=13.3;
-  h:=12;
-  g:=x+y*h;
-  write(g)
+read(x,y);
+h:=1.5;
+g:=0;
+x:=f(h,x,14);
+write(g)
 end.
