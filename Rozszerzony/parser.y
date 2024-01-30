@@ -252,7 +252,67 @@ stmt:
         }
     | read
     | write
-    | call
+    | ID 
+    {
+        symbol_t sym = symtable[$1];
+        int incsp = 0;
+        if(sym.token == FUNCTION) {
+            // push result var
+            int result = newTemp(sym.type);
+            appendPush(symtable[result], newArgument(sym.type));
+            incsp += 4;
+            $$ = result;
+        }
+        if(sym.token == FUNCTION || sym.token == PROCEDURE) {
+            appendCall(sym.name);
+            if(sym.token == FUNCTION) {
+                newNum(std::to_string(incsp), INT);
+                appendIncsp(incsp);
+            }    
+        }
+        
+    }
+    | ID '(' expression_list ')'
+    {
+        int id = lookup(symtable[$1].name, FUNCTION);
+        id = (id == -1 ? lookup(symtable[$1].name, PROCEDURE) : id);
+        if ( id == -1 ) {
+            yyerror((symtable[$1].name + " is not callable.").c_str());
+            YYERROR;
+        }
+
+        
+       symbol_t function = symtable[id];
+        if(function.arguments.size() < idsList.size()) {
+            yyerror("Podano za dużo argumentów do funkcji");
+            YYERROR;
+        } else if (function.arguments.size() > idsList.size()) {
+            yyerror("Podano za mało argumentów do funkcji");
+            YYERROR;
+        }
+
+        int incsp = 0;
+        for(int id = 0; id < (int)(idsList.size()); ++id, incsp += 4) {
+            symbol_t given = symtable[idsList[id]];
+            symbol_t expectedType = function.arguments[id];
+            appendPush(given, expectedType);
+            
+        }
+        idsList.clear();
+        
+        if(function.token == FUNCTION) {
+            // push result var
+            int result = newTemp(function.type);
+            appendPush(symtable[result], newArgument(function.type));
+            incsp += 4;
+            $$ = result;
+        }
+
+        appendCall(function.name);
+        
+        newNum(std::to_string(incsp), INT);
+        appendIncsp(incsp);
+    }
 
 
 call:
