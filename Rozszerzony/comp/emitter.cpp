@@ -16,6 +16,8 @@
 // Local
 // Output stream for generated assembly code
 std::stringstream outb;
+std::string quick_save;
+std::string outf;
 /**
  * @brief Zwraca string operatora
  *
@@ -197,15 +199,22 @@ int append2O(symbol_t left_side, int operacja, symbol_t right_side)
 // Format a symbol for reference in assembly code
 std::string formatRef(symbol_t s)
 {
+  std::string out = "";
+
+  if (!s.global)
+  {
+    out += "BP" + sign(s.address);
+  }
+
   if (s.token == VAL || s.token == LABEL)
   {
     return "#" + s.name;
   }
-  else if (s.token == VAR)
+  else if (s.passed || s.token == VAR)
   {
-    return std::to_string(abs(s.address));
+    return out + std::to_string(abs(s.address));
   }
-  return "";
+  return out;
 }
 
 // Write assembly code for write operation
@@ -272,4 +281,22 @@ void appendIncsp(int incsp)
   writeCode(
       "incsp.i\t#" + std::to_string(incsp) + "\t",
       "incsp.i\t" + std::to_string(incsp));
+}
+
+void startFuncEmittion()
+{
+  quick_save = outb.str();
+  outb.str(std::string());
+}
+
+void endFuncEmittion(std::string enterOffset)
+{
+  writeCode("leave\t", "leave");
+  writeCode("return\t", "return");
+
+  outf = outb.str();
+  outb.str(std::string());
+  outb << quick_save;
+  writeCode("enter.i\t#" + enterOffset + "\t", "enter.i\t#" + enterOffset);
+  outb << outf;
 }

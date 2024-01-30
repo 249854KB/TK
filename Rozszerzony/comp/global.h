@@ -95,6 +95,31 @@ int getOperationToken(std::string);
  */
 void printSymtable();
 
+/**
+ * @brief Usuwa wszystkie zmienne lokalne z tablicy symboli
+ *
+ */
+void clearLocal();
+
+/**
+ * @brief quick_save for symtable
+ *
+ */
+void startFuncEmittion();
+/**
+ * @brief Continues symtable
+ *
+ * @param enterOffset
+ */
+void endFuncEmittion(std::string enterOffset);
+
+/**
+ * @brief Zwraca adress ostatniej zmiennej na stosie
+ *
+ * @return int
+ */
+int getStackSize();
+
 // Funkcje formatujące do wypluwania
 
 /**

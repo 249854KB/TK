@@ -25,8 +25,8 @@ struct symbol_t
   int type;                        // int/real
   int address;                     // address
   std::vector<symbol_t> arguments; // argumenty wykorzystywane w funkcji
-  bool global;                     // Globalne
-  bool passed;                     // Otrzymane z innej funkcji (jest argumentem)
+  bool global;                     // Globalne na context
+  bool passed = false;             // Otrzymane z innej funkcji (jest argumentem)
 };
 
 #endif // SYMBOL_H_

@@ -9,7 +9,6 @@ std::vector<int> argsList;
 bool isType(int);
 int yylex();
 int functionOffset = 8; // FUNCTION = 12; 
-int procedureOffset = 8; //PROCEDURE = 8;
 bool context = GLOBAL_CONTEXT;
 %}
 
@@ -27,6 +26,7 @@ bool context = GLOBAL_CONTEXT;
 %token ASSIGN
 %token ADDOP
 %token MULOP
+%token RELOP
 
 %token REAL
 %token INT
@@ -48,7 +48,7 @@ program:
         symtable[$2].global = true;
         writeCode("jump.i\t#program", "jump.i program");
     } 
-    '(' identifier_list ')' ';'
+    '(' program_identifier_list ')' ';'
     global_variables
     subprogram_declarations 
     {
@@ -69,38 +69,54 @@ subprogram_declarations:
 
 
 subprogram_declaration:
-    subprogram_head local_variables body
+    //Or functional
+    subprogram_head
     {
-        context = GLOBAL_CONTEXT;
+        startFuncEmittion();
+        context = LOCAL_CONTEXT;
+    } 
+    local_variables body
+    {
+        int stackSize = newNum(std::to_string(getStackSize()), INT);
+        endFuncEmittion(symtable[stackSize].name);
+        printSymtable();
+        std::cout << std::endl;
+        clearLocal();
+        context = GLOBAL_CONTEXT; 
     }
 
 subprogram_head:
+    function | procedure
+
+function:
     FUNCTION ID
     {
         writeLbl(symtable[$2].name);
-        context = LOCAL_CONTEXT;
+      
+        
     } 
     arguments ':' type ';'
     {
         
         symbol_t* function = &symtable[$2];
         function->token = FUNCTION;
-        function->type = $5;
+        function->type = $6;
+
         std::vector<symbol_t>args;
         for(auto id : argsList) {
             symbol_t idS = symtable[id];
             args.push_back(newArgument(idS.type));
             
         }
-        
         function->arguments = args;
         argsList.clear();
+
         // TO do append argsList in different places
         functionOffset = 8;
         symbol_t returnVar;
         returnVar.name = function->name;
         returnVar.token = VAR;
-        returnVar.type = $5;
+        returnVar.type = $6;
         // Ponieważ miejsce zostało z góry przeznaczone
         returnVar.passed = true;
         returnVar.global = false;
@@ -111,6 +127,27 @@ subprogram_head:
     | PROCEDURE ID arguments ';'
     
 
+procedure:
+    PROCEDURE ID
+    {
+        writeLbl(symtable[$2].name);
+        functionOffset = 4;
+    }
+    arguments ';'
+    {
+        symbol_t* procedure = &symtable[$2];
+        procedure->token = PROCEDURE;
+                
+        std::vector<symbol_t> args;
+        for(auto id : argsList) {
+            symbol_t idS = symtable[id];
+            args.push_back(newArgument(idS.type));
+        }
+        procedure->arguments = args;
+
+        argsList.clear();
+    }
+    
 arguments:
     '(' parameter_list  ')'
      {
@@ -119,11 +156,20 @@ arguments:
             functionOffset += 4; // Size of reference
             symtable[*arg].address = functionOffset;
         }
+        
     }
     | //empty
     ; 
 
 parameter_list:
+    parameters 
+    | //empty
+    ;
+
+parameters:
+    parameters ';' parameter | parameter ;
+
+parameter:
     variables ':' type
     {
         if(isType($3)) YYERROR;
@@ -138,28 +184,14 @@ parameter_list:
         argsList.insert(argsList.end(), idsList.begin(), idsList.end());
         idsList.clear();
     }
-    | parameter_list ';' variables ':' type
-    {
-        if(isType($5)) YYERROR;
-        std::cout << "Left bitch";
-        for(auto &symTabIdx : idsList) {
-            symbol_t* sym = &symtable[symTabIdx];
-            sym->type = $5;
-            sym->token = VAR;
-            sym->global = false;
-            sym->passed = true;
-    
-        }
-        argsList.insert(argsList.end(), idsList.begin(), idsList.end());
-        idsList.clear();
-    }
+
 
 body:
     BEG function_body END
 
-identifier_list: 
+program_identifier_list: 
     ID 
-    | variables ',' ID;
+    | program_identifier_list ',' ID;
 
 global_variables:
     global_variables VAR variables ':' type ';'
@@ -200,8 +232,9 @@ type:
 
 
 variables:
+    variables ',' ID {idsList.push_back($3);}
+    |
     ID {idsList.push_back($1);}
-    | variables ',' ID {idsList.push_back($3);}
     
 
 
@@ -214,14 +247,14 @@ stmts:
     stmts ';' stmt | stmt 
 
 stmt:
-    ID ASSIGN expression
+    ID ASSIGN simple_expression
         {
             appendAssign(symtable[$1], symtable[$3]);
         }
-    | ID ASSIGN call
     | read
     | write
     | call
+
 
 call:
     ID '(' expression_list ')'
@@ -264,8 +297,26 @@ call:
         appendIncsp(incsp);
     }
     
-
 expression:
+    simple_expression 
+    | simple_expression RELOP simple_expression
+    {
+        //int logicalVal = newTemp(INT);
+        //int truthy = newLabel();
+        //emitJump($2, symtable[$1], symtable[$3], symtable[truthy]);
+        //int fNum = newNum("0", INT); // false
+        //int end = newLabel();        
+        //emitAssign(symtable[logicalVal], symtable[fNum]);
+        //emitJump(UNCONDITIONAL, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[end]);
+        //wrtLbl(symtable[truthy].name);
+        //int tNum = newNum("1", INT); // false
+        //emitAssign(symtable[logicalVal], symtable[tNum]);
+        //wrtLbl(symtable[end].name);
+        //$$ = logicalVal;
+    }
+    
+
+simple_expression:
     term 
     | ADDOP term
     {
@@ -276,7 +327,7 @@ expression:
             $$ = $2;
         }
     }
-    | expression ADDOP term
+    | simple_expression ADDOP term
     {
         $$ = append3O(symtable[$1], $2, symtable[$3]);
     }
@@ -295,6 +346,42 @@ term:
 factor:
     ID 
     | VAL 
+    | ID '(' expression_list ')'
+        {
+            int id = lookup(symtable[$1].name, FUNCTION);
+            
+          
+        if ( id == -1 ) {
+            yyerror((symtable[$1].name + " is not callable.").c_str());
+            YYERROR;
+        }
+
+        symbol_t function = symtable[id];
+        if(function.arguments.size() < idsList.size()) {
+            yyerror("Podano za dużo argumentów do funkcji");
+            YYERROR;
+        } else if (function.arguments.size() > idsList.size()) {
+            yyerror("Podano za mało argumentów do funkcji");
+            YYERROR;
+        }
+            int incsp = 0;
+            for(int id = 0; id < int(idsList.size()); ++id, incsp += 4) {
+                symbol_t given = symtable[idsList[id]];
+                symbol_t expectedType = function.arguments[id];
+                appendPush(given, expectedType);
+                
+            }
+            idsList.clear();
+            
+            // push result var
+            int result = newTemp(function.type);
+            appendPush(symtable[result], newArgument(function.type));
+            incsp += 4;
+            $$ = result;
+            appendCall(function.name);
+            newNum(std::to_string(incsp), INT);
+            appendIncsp(incsp);
+        }
     | '(' expression ')'
         {
             $$ = $2;
@@ -331,9 +418,6 @@ write:
         idsList.clear();
     }
 
-local_variables:
-    | //empty
-    ;
 %%
 
 

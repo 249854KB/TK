@@ -55,13 +55,14 @@ int insertPlain(symbol_t sym)
 
 int insert(std::string name, int token, int type)
 {
-  int look = lookup(name);
-  if (look >= 0)
-    return look;
+  int found = lookup(name);
+  if (found >= 0 && context == symtable[found].global)
+    return found;
   symbol_t sym;
   sym.name = name;
   sym.token = token;
   sym.type = type;
+  sym.global = context;
   return insertPlain(sym);
 }
 
@@ -72,6 +73,7 @@ int newTemp(int type)
   t.type = type;
   t.token = VAR;
   t.address = 0;
+  t.global = context;
   int index = insertPlain(t);
   symtable[index].address = getAddress(t.name);
   ++tempCount;
@@ -107,8 +109,12 @@ int getAddress(std::string name)
   int address = 0;
   for (auto sym : symtable)
   {
-
-    if (sym.name != name)
+    if (context == LOCAL_CONTEXT)
+    {
+      if (context == sym.global && sym.address <= 0)
+        address -= getSymbolSize(sym);
+    }
+    else if (sym.name != name)
     {
       address += getSymbolSize(sym);
     }
@@ -154,8 +160,7 @@ symbol_t newArgument(int type)
   sym.type = type;
   sym.token = NONE;
   sym.passed = false;
-  sym.global = true;
-  // sym.global = context();
+  sym.global = context;
   sym.address = 0xFFFF;
   return sym;
 }
@@ -167,4 +172,24 @@ int insert(symbol_t sym)
   if (look >= 0 && sym.global == symtable[look].global)
     return look;
   return insertPlain(sym);
+}
+
+void clearLocal()
+{
+  for (int i = symtable.size() - 1; i > 0 && !symtable[i].global; --i, symtable.pop_back())
+    ;
+}
+
+int getStackSize()
+{
+  int lastSym = -1;
+  for (int i = 0; i < (int)symtable.size(); ++i)
+  {
+    symbol_t sym = symtable[i];
+    if (!sym.global && sym.token == VAR)
+    {
+      lastSym = i;
+    }
+  }
+  return symtable[lastSym].address > 0 ? 0 : abs(symtable[lastSym].address);
 }

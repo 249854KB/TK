@@ -10,7 +10,7 @@ end;
 
 begin
 read(x,y);
-h:=1.5;
+h:=1.5 +2*3.5;
 g:=0;
 x:=f(h,x,14);
 write(g)
