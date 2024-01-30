@@ -116,7 +116,7 @@ function:
         symbol_t returnVar;
         returnVar.name = function->name;
         returnVar.token = VAR;
-        returnVar.type = $6;
+        returnVar.type =$6;
         // Ponieważ miejsce zostało z góry przeznaczone
         returnVar.passed = true;
         returnVar.global = false;
@@ -124,7 +124,6 @@ function:
         insert(returnVar);
     }
     
-    | PROCEDURE ID arguments ';'
     
 
 procedure:

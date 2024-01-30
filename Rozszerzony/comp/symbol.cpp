@@ -19,11 +19,13 @@ void initSymtable()
   read.name = "read";
   read.token = PROCEDURE;
   read.type = NONE;
+  read.global = true;
 
   symbol_t write;
   write.name = "write";
   write.token = PROCEDURE;
   write.type = NONE;
+  write.global = true;
 
   symbol_t program;
   program.name = "program";

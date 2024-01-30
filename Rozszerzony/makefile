@@ -28,10 +28,10 @@ $(SRC_DIR)lexer.cpp: lexer.lex
 	flex -l -o $(SRC_DIR)lexer.cpp lexer.lex
 
 # Bison part
-bison:$(SRC_DIR)parser.cpp  $(SRC_DIR)parser.hpp
+bison:$(SRC_DIR)parser.cpp  $(SRC_DIR)parser.hpp 
 
 $(SRC_DIR)parser.cpp $(SRC_DIR)parser.hpp: parser.y 
-	bison -v -t -d -o $(SRC_DIR)parser.cpp parser.y
+	bison -Wcex -v -t -d -o  $(SRC_DIR)parser.cpp parser.y 
 
 # Updating SRCS and TARGETS
 update_sources:

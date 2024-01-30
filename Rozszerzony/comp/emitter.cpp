@@ -113,7 +113,7 @@ std::string typeInAsm(int type)
 }
 
 // Convert integer to real and vice versa in assembly code
-int appendIntToReal(symbol_t from, symbol_t to)
+int appendIntToReal(symbol_t from)
 {
   int x = newTemp(REAL);
 
@@ -122,7 +122,7 @@ int appendIntToReal(symbol_t from, symbol_t to)
   return x;
 }
 
-int appendRealToInt(symbol_t from, symbol_t to)
+int appendRealToInt(symbol_t from)
 {
   int x = newTemp(INT);
   writeCode("realtoint.r\t" + format(from) + "," + format(symtable[x]),
@@ -133,14 +133,14 @@ int appendRealToInt(symbol_t from, symbol_t to)
 // Expand and cast the right side to match the left side for assignment
 void appendAssign(symbol_t left_side, symbol_t right_side)
 {
-  symbol_t new_right = right_side;
+
   if (left_side.type != right_side.type)
   {
     // Handle type conversion
     if (left_side.type == INT && right_side.type == REAL)
-      new_right = symtable[appendRealToInt(right_side, left_side)];
+      right_side = symtable[appendRealToInt(right_side)];
     else if (left_side.type == REAL && right_side.type == INT)
-      new_right = symtable[appendIntToReal(right_side, left_side)];
+      right_side = symtable[appendIntToReal(right_side)];
     else
       yyerror(("Types " +
                std::string(token_name(left_side.type)) + " and " +
@@ -148,38 +148,42 @@ void appendAssign(symbol_t left_side, symbol_t right_side)
                   .c_str());
   }
 
-  writeCode("mov." + typeInAsm(left_side.type) + "\t" + format(new_right) + "," + format(left_side) + "\t",
-            "mov." + typeInAsm(left_side.type) + "\t" + formatName(new_right.name) + "," + formatName(left_side.name));
+  writeCode("mov." + typeInAsm(left_side.type) + "\t" + format(right_side) + "," + format(left_side) + "\t",
+            "mov." + typeInAsm(left_side.type) + "\t" + formatName(right_side.name) + "," + formatName(left_side.name));
 }
 
-// Check if the types of two symbols are different
-symbol_t willChange(symbol_t left_side, symbol_t right_side)
+// Check if the types of two symbols are different and auto change them
+bool willChange(symbol_t &left_side, symbol_t &right_side)
 {
-  symbol_t new_right = right_side;
+  // No const no need to cast :)
   if (left_side.type != right_side.type)
   {
     // Handle type conversion
     if (left_side.type == INT && right_side.type == REAL)
-      new_right = symtable[appendRealToInt(right_side, left_side)];
+      left_side = symtable[appendIntToReal(left_side)];
     else if (left_side.type == REAL && right_side.type == INT)
-      new_right = symtable[appendIntToReal(right_side, left_side)];
+      right_side = symtable[appendIntToReal(right_side)];
     else
       yyerror(("Types " +
                std::string(token_name(left_side.type)) + " and " +
                std::string(token_name(right_side.type)) + " are incompatible.")
                   .c_str());
+    return true;
   }
-  return new_right;
+  return false;
 }
 
 // Expand and cast for arithmetic operations with three operands
 int append3O(symbol_t left_side, int operacja, symbol_t right_side)
 {
-  symbol_t new_left_side = willChange(right_side, left_side);
+  if (willChange(right_side, left_side))
+  {
+    std::cout << "Success";
+  }
 
-  int result = newTemp(new_left_side.type);
-  writeCode(addop(operacja) + typeInAsm(new_left_side.type) + "\t" + format(new_left_side) + "," + format(right_side) + "," + format(symtable[result]),
-            addop(operacja) + typeInAsm(new_left_side.type) + "\t" + formatName(new_left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
+  int result = newTemp(left_side.type);
+  writeCode(addop(operacja) + typeInAsm(left_side.type) + "\t" + format(left_side) + "," + format(right_side) + "," + format(symtable[result]),
+            addop(operacja) + typeInAsm(left_side.type) + "\t" + formatName(left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
 
   return result;
 }
@@ -187,11 +191,11 @@ int append3O(symbol_t left_side, int operacja, symbol_t right_side)
 // Expand and cast for arithmetic operations with two operands
 int append2O(symbol_t left_side, int operacja, symbol_t right_side)
 {
-  symbol_t new_left_side = willChange(right_side, left_side);
+  willChange(right_side, left_side);
 
-  int result = newTemp(new_left_side.type);
-  writeCode(mulop(operacja) + typeInAsm(new_left_side.type) + "\t" + format(new_left_side) + "," + format(right_side) + "," + format(symtable[result]),
-            mulop(operacja) + typeInAsm(new_left_side.type) + "\t" + formatName(new_left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
+  int result = newTemp(left_side.type);
+  writeCode(mulop(operacja) + typeInAsm(left_side.type) + "\t" + format(left_side) + "," + format(right_side) + "," + format(symtable[result]),
+            mulop(operacja) + typeInAsm(left_side.type) + "\t" + formatName(left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
 
   return result;
 }
@@ -246,8 +250,7 @@ void appendPush(symbol_t arg, symbol_t expected)
   else
   {
     // sprawdzamy czy się zmieni
-    symbol_t tSym = willChange(expected, arg);
-    arg = tSym;
+    willChange(expected, arg);
   }
 
   std::string ref = "";
