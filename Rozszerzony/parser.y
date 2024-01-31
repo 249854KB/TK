@@ -458,6 +458,28 @@ factor:
         {
             $$ = $2;
         }
+    | NOT factor
+        {
+            if (symtable[$2].type == REAL){ 
+               $2 =  appendRealToInt(symtable[$2]);
+            }
+
+            int factorZero = newLabel();
+            int fNum = newNum("0", INT); // false
+            appendJump(E, symtable[$2], symtable[fNum], symtable[factorZero]);
+            
+            int endNegate = newLabel();
+            int negated = newTemp(INT);
+            appendAssign(symtable[negated], symtable[fNum]);
+            appendJump(NO_COMPARISON, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[endNegate]);
+            writeLbl(symtable[factorZero].name);
+
+            int tNum = newNum("1", INT); // true
+            appendAssign(symtable[negated], symtable[tNum]);
+            writeLbl(symtable[endNegate].name);
+
+            $$ = negated;
+        }
     
 
  

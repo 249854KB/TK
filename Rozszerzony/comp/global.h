@@ -183,8 +183,8 @@ void writeLbl(std::string label);
 symbol_t newArgument(int type);
 // Appendowanie - pisanie write code
 
-int appendIntToReal(symbol_t from, symbol_t to);
-int appendRealToInt(symbol_t from, symbol_t to);
+int appendIntToReal(symbol_t from);
+int appendRealToInt(symbol_t from);
 void appendAssign(symbol_t left_side, symbol_t right_side);
 int append2O(symbol_t, int, symbol_t);
 int append3O(symbol_t, int, symbol_t);
@@ -194,5 +194,6 @@ void appendPush(symbol_t arg, symbol_t expected);
 int appendCall(std::string var);
 void appendIncsp(int incsp);
 void appendJump(int rel_op, symbol_t left_side, symbol_t right_side, symbol_t new_section);
+int appendRealToInt(symbol_t from);
 
 void exportAsm(std::string);
