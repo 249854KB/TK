@@ -1,5 +1,5 @@
 #include <string>
-
+#define NO_COMPARISON -1
 // tokens for operations
 enum op
 {
@@ -7,5 +7,12 @@ enum op
     SUB,
     MUL,
     DIV,
-    MOD
+    MOD,
+    OR_tok,
+    AND,
+    E,
+    LE,
+    GE,
+    G,
+    L
 };

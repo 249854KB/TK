@@ -17,6 +17,7 @@ id {letter}({letter}|{integer})*
 assign ":="
 addop "-"|"+"
 mulop "*"|"/"|"div"|"mod"|"and"
+relop "="|"<="|"<"|">="|">"
 
 %%
 \r?\n       lineno++;
@@ -36,9 +37,16 @@ end         {return END;}
 write       {return WRITE;}
 read        {return READ;}
 
+not         {return NOT;}
+or          {yylval = getOperationToken(yytext); return OR;}
+if          {return IF;}
+then        {return THEN;}
+else        {return ELSE;}
+
 :=          {return ASSIGN;}
 {addop}     {yylval = getOperationToken(yytext); return ADDOP;}
 {mulop}     {yylval = getOperationToken(yytext); return MULOP;}
+{relop}     {yylval = getOperationToken(yytext); return RELOP;}
 
 {integer}   {yylval = insert(yytext, VAL, INT); return VAL;}
 {real}    {yylval = insert(yytext, VAL, REAL); return VAL;}

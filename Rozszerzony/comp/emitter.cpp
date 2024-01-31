@@ -303,3 +303,41 @@ void endFuncEmittion(std::string enterOffset)
   writeCode("enter.i\t#" + enterOffset + "\t", "enter.i\t#" + enterOffset);
   outb << outf;
 }
+
+std::string formatRelop(int op)
+{
+  switch (op)
+  {
+  case E:
+    return "e";
+  case GE:
+    return "ge";
+  case LE:
+    return "le";
+  case G:
+    return "g";
+  case L:
+    return "l";
+  default:
+    return "no_comparison";
+  }
+}
+
+void appendJump(int rel_op, symbol_t left_side, symbol_t right_side, symbol_t new_section)
+{
+  if (rel_op == NO_COMPARISON)
+  {
+    writeCode("jump.i\t" + format(new_section) + "\t\t", "jump.i\t" + formatName(new_section.name));
+  }
+  else
+  {
+    std::string type;
+    // if both are int
+    type = (right_side.type == REAL || left_side.type == REAL ? "r" : "i");
+    writeCode(
+        "j" + formatRelop(rel_op) + "." + type + "\t" + format(left_side) +
+            "," + format(right_side) + "," + format(new_section),
+        "j" + formatRelop(rel_op) + "." + type + "\t" + formatName(left_side.name) +
+            "," + formatName(right_side.name) + "," + formatName(new_section.name));
+  }
+}

@@ -9,35 +9,45 @@ f:
         leave                           ;leave   
         return                          ;return  
 p:
-        enter.i #12                     ;enter.i 12
-        realtoint.r *BP+16,BP-4         ;realtoint.r a,$t3
-        mov.i   BP-4,*BP+8              ;mov.i   $t3,c
-        inttoreal.i *BP+12,BP-12        ;inttoreal.i b,$t4
-        mov.r   BP-12,*BP+16            ;mov.r   $t4,a
+        enter.i #16                     ;enter.i 16
+        jl.i    *BP+12,*BP+8,#lab1      ;jl.i    b,c,lab1
+        mov.i   #0,BP-4                 ;mov.i   0,$t3
+        jump.i  #lab2                   ;jump.i  lab2
+lab1:
+        mov.i   #1,BP-4                 ;mov.i   1,$t3
+lab2:
+        je.i    BP-4,#0,#lab3           ;je.i    $t3,0,lab3
+        realtoint.r *BP+16,BP-8         ;realtoint.r a,$t4
+        mov.i   BP-8,*BP+8              ;mov.i   $t4,c
+        jump.i  #lab4                   ;jump.i  lab4
+lab3:
+        inttoreal.i *BP+12,BP-16        ;inttoreal.i b,$t5
+        mov.r   BP-16,*BP+16            ;mov.r   $t5,a
+lab4:
         leave                           ;leave   
         return                          ;return  
 lab0:
         read.i  0                       ;read.i  x
         read.i  4                       ;read.i  y
-        inttoreal.i 0,24                ;inttoreal.i x,$t5
-        mul.r   16,24,32                ;mul.r   h,$t5,$t6
-        add.r   8,32,40                 ;add.r   g,$t6,$t7
-        mov.r   40,16                   ;mov.r   $t7,h
-        mov.r   #12,48                  ;mov.r   12,$t8
-        push.i  #48                     ;push.i  &$t8
+        inttoreal.i 0,24                ;inttoreal.i x,$t6
+        mul.r   16,24,32                ;mul.r   h,$t6,$t7
+        add.r   8,32,40                 ;add.r   g,$t7,$t8
+        mov.r   40,16                   ;mov.r   $t8,h
+        mov.r   #12,48                  ;mov.r   12,$t9
+        push.i  #48                     ;push.i  &$t9
         push.i  #0                      ;push.i  &x
         push.i  #4                      ;push.i  &y
         call.i  #p                      ;call.i  &p
         incsp.i #12                     ;incsp.i 12
         push.i  #16                     ;push.i  &h
-        inttoreal.i 0,56                ;inttoreal.i x,$t9
-        push.i  #56                     ;push.i  &$t9
-        mov.i   #14,64                  ;mov.i   14,$t10
-        push.i  #64                     ;push.i  &$t10
-        push.i  #68                     ;push.i  &$t11
+        inttoreal.i 0,56                ;inttoreal.i x,$t10
+        push.i  #56                     ;push.i  &$t10
+        mov.i   #14,64                  ;mov.i   14,$t11
+        push.i  #64                     ;push.i  &$t11
+        push.i  #68                     ;push.i  &$t12
         call.i  #f                      ;call.i  &f
         incsp.i #16                     ;incsp.i 16
-        realtoint.r 68,76               ;realtoint.r $t11,$t12
-        mov.i   76,0                    ;mov.i   $t12,x
+        realtoint.r 68,76               ;realtoint.r $t12,$t13
+        mov.i   76,0                    ;mov.i   $t13,x
         write.r 8                       ;write.r g
         exit                            ;exit    

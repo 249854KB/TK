@@ -1,17 +1,26 @@
 #include "global.h"
 
+#define returnop(str, ret) \
+  if (yytext == str)       \
+    return ret;
+
 int getOperationToken(std::string yytext)
 {
-  if (yytext == "+")
-    return ADD;
-  else if (yytext == "-")
-    return SUB;
-  else if (yytext == "*")
-    return MUL;
-  else if (yytext == "/" || yytext == "div")
-    return DIV;
-  else if (yytext == "mod")
-    return MOD;
+  returnop("+", ADD);
+  returnop("-", SUB);
+  returnop("*", MUL);
+  returnop("div", DIV);
+  returnop("/", DIV);
+  returnop("mod", MOD);
+
+  returnop("and", AND);
+  returnop("or", OR_tok);
+
+  returnop("=", E);
+  returnop(">", G);
+  returnop(">=", GE);
+  returnop("<", L);
+  returnop("<=", LE);
 
   return -1;
 }

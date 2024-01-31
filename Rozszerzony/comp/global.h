@@ -9,13 +9,14 @@
 
 #define GLOBAL_CONTEXT true
 #define LOCAL_CONTEXT false
+
 // Zliczanie + tabla symboli na extern
 
 extern bool context;
 extern int errorno;
 extern int lineno;
 extern std::vector<symbol_t> symtable;
-
+extern symbol_t EMPTY_SYMBOL;
 // Czyszczenie pamięci
 
 int yylex_destroy();
@@ -73,8 +74,28 @@ void initSymtable();
  */
 int getAddress(std::string name);
 
-int newTemp(int);
-int newNum(std::string, int);
+/**
+ * @brief Tworzy nową zmienną tymczasową o danym typu
+ *
+ * @return int type
+ */
+int newTemp(int type);
+
+/**
+ * @brief Wstawia nową stałą tymczasową inset(VAL)
+ *
+ * @param name liczba
+ * @param type typ (int/real)
+ * @return int id
+ */
+int newNum(std::string name, int type);
+
+/**
+ * @brief Wstawia nowy Label
+ *
+ * @return int
+ */
+int newLabel();
 
 // parser
 int yyparse();
@@ -172,5 +193,6 @@ void appendRead(symbol_t symbolToRead);
 void appendPush(symbol_t arg, symbol_t expected);
 int appendCall(std::string var);
 void appendIncsp(int incsp);
+void appendJump(int rel_op, symbol_t left_side, symbol_t right_side, symbol_t new_section);
 
 void exportAsm(std::string);

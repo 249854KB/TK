@@ -37,6 +37,13 @@ bool context = GLOBAL_CONTEXT;
 %token LABEL
 %token DONE
 
+%token NOT
+%token IF
+%token THEN
+%token ELSE
+%token OR
+
+
 %token PROCEDURE
 %token FUNCTION
 
@@ -313,7 +320,27 @@ stmt:
         newNum(std::to_string(incsp), INT);
         appendIncsp(incsp);
     }
+    | if_stmt
 
+if_stmt:
+    IF expression
+    {
+        int then = newLabel();
+        int fNum = newNum("0", symtable[$2].type);
+        appendJump(E, symtable[$2], symtable[fNum], symtable[then]);
+        $2 = then;
+    }
+    THEN stmt
+    {
+        int elseL = newLabel();
+        appendJump(NO_COMPARISON, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[elseL]);
+        writeLbl(symtable[$2].name);
+        $4 = elseL;
+    }
+    ELSE stmt
+    {
+        writeLbl(symtable[$4].name);
+    }
 
 call:
     ID '(' expression_list ')'
@@ -360,18 +387,18 @@ expression:
     simple_expression 
     | simple_expression RELOP simple_expression
     {
-        //int logicalVal = newTemp(INT);
-        //int truthy = newLabel();
-        //emitJump($2, symtable[$1], symtable[$3], symtable[truthy]);
-        //int fNum = newNum("0", INT); // false
-        //int end = newLabel();        
-        //emitAssign(symtable[logicalVal], symtable[fNum]);
-        //emitJump(UNCONDITIONAL, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[end]);
-        //wrtLbl(symtable[truthy].name);
-        //int tNum = newNum("1", INT); // false
-        //emitAssign(symtable[logicalVal], symtable[tNum]);
-        //wrtLbl(symtable[end].name);
-        //$$ = logicalVal;
+        int logicalVal = newTemp(INT);
+        int truthy = newLabel();
+        appendJump($2, symtable[$1], symtable[$3], symtable[truthy]);
+        int fNum = newNum("0", INT); 
+        int end = newLabel();        
+        appendAssign(symtable[logicalVal], symtable[fNum]);
+        appendJump(NO_COMPARISON, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[end]);
+        writeLbl(symtable[truthy].name);
+        int tNum = newNum("1", INT); // false
+        appendAssign(symtable[logicalVal], symtable[tNum]);
+        writeLbl(symtable[end].name);
+        $$ = logicalVal; 
     }
     
 

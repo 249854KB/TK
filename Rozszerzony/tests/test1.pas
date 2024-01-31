@@ -9,8 +9,10 @@ begin
 end;
 procedure p(a:real; b, c: integer);
 begin
-   c:=a;
-   a:= b
+if b < c then
+    c:=a
+  else
+    a:= b
 end;
 
 begin

@@ -1,6 +1,9 @@
 #include "global.h"
 
 std::vector<symbol_t> symtable;
+symbol_t EMPTY_SYMBOL; // Symbol with no name whatsoever
+
+// Counters
 int tempCount = 0;
 int labelCount = 0;
 
@@ -85,6 +88,11 @@ int newTemp(int type)
 int newNum(std::string name, int type)
 {
   return insert(name, VAL, type);
+}
+
+int newLabel()
+{
+  return insert("lbl" + std::to_string(++labelCount), LABEL, NONE);
 }
 
 int sizeFromToken(int type)
