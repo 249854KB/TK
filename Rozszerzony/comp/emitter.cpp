@@ -98,12 +98,14 @@ std::string formatName(std::string name)
 
 void writeCode(std::string line, std::string additional_info)
 {
-  outb << "\t" << line << "\t\t;" << additional_info << std::endl;
+  outb << "\t"
+       << std::setw(40) << std::left << line
+       << std::left << ";" << std::left << additional_info << std::endl;
 }
 
 void writeLbl(std::string label)
 {
-  outb << label + ":" << std::endl;
+  outb << std::setw(35) << label + ":" << std::endl;
 }
 
 // Convert a data type to its corresponding assembly type
@@ -117,16 +119,16 @@ int appendIntToReal(symbol_t from)
 {
   int x = newTemp(REAL);
 
-  writeCode("inttoreal.i\t" + format(from) + "," + format(symtable[x]),
-            "inttoreal.i\t" + formatName(from.name) + "," + formatName(symtable[x].name));
+  writeCode("inttoreal.i " + format(from) + "," + format(symtable[x]),
+            "inttoreal.i " + formatName(from.name) + "," + formatName(symtable[x].name));
   return x;
 }
 
 int appendRealToInt(symbol_t from)
 {
   int x = newTemp(INT);
-  writeCode("realtoint.r\t" + format(from) + "," + format(symtable[x]),
-            "realtoint.r\t" + formatName(from.name) + "," + formatName(symtable[x].name));
+  writeCode("realtoint.r " + format(from) + "," + format(symtable[x]),
+            "realtoint.r " + formatName(from.name) + "," + formatName(symtable[x].name));
   return x;
 }
 
@@ -148,8 +150,8 @@ void appendAssign(symbol_t left_side, symbol_t right_side)
                   .c_str());
   }
 
-  writeCode("mov." + typeInAsm(left_side.type) + "\t" + format(right_side) + "," + format(left_side) + "\t",
-            "mov." + typeInAsm(left_side.type) + "\t" + formatName(right_side.name) + "," + formatName(left_side.name));
+  writeCode("mov." + typeInAsm(left_side.type) + " " + format(right_side) + "," + format(left_side),
+            "mov." + typeInAsm(left_side.type) + " " + formatName(right_side.name) + "," + formatName(left_side.name));
 }
 
 // Check if the types of two symbols are different and auto change them
@@ -182,8 +184,8 @@ int append3O(symbol_t left_side, int operacja, symbol_t right_side)
   }
 
   int result = newTemp(left_side.type);
-  writeCode(addop(operacja) + typeInAsm(left_side.type) + "\t" + format(left_side) + "," + format(right_side) + "," + format(symtable[result]),
-            addop(operacja) + typeInAsm(left_side.type) + "\t" + formatName(left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
+  writeCode(addop(operacja) + typeInAsm(left_side.type) + " " + format(left_side) + "," + format(right_side) + "," + format(symtable[result]),
+            addop(operacja) + typeInAsm(left_side.type) + " " + formatName(left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
 
   return result;
 }
@@ -194,8 +196,8 @@ int append2O(symbol_t left_side, int operacja, symbol_t right_side)
   willChange(right_side, left_side);
 
   int result = newTemp(left_side.type);
-  writeCode(mulop(operacja) + typeInAsm(left_side.type) + "\t" + format(left_side) + "," + format(right_side) + "," + format(symtable[result]),
-            mulop(operacja) + typeInAsm(left_side.type) + "\t" + formatName(left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
+  writeCode(mulop(operacja) + typeInAsm(left_side.type) + " " + format(left_side) + "," + format(right_side) + "," + format(symtable[result]),
+            mulop(operacja) + typeInAsm(left_side.type) + " " + formatName(left_side.name) + "," + formatName(right_side.name) + "," + formatName(symtable[result].name));
 
   return result;
 }
@@ -224,15 +226,15 @@ std::string formatRef(symbol_t s)
 // Write assembly code for write operation
 void appendWrite(symbol_t symbolToWrite)
 {
-  writeCode("write." + typeInAsm(symbolToWrite.type) + "\t" + format(symbolToWrite) + "\t",
-            "write." + typeInAsm(symbolToWrite.type) + "\t" + formatName(symbolToWrite.name));
+  writeCode("write." + typeInAsm(symbolToWrite.type) + " " + format(symbolToWrite),
+            "write." + typeInAsm(symbolToWrite.type) + " " + formatName(symbolToWrite.name));
 }
 
 // Write assembly code for read operation
 void appendRead(symbol_t symbolToRead)
 {
-  writeCode("read." + typeInAsm(symbolToRead.type) + "\t" + format(symbolToRead) + "\t",
-            "read." + typeInAsm(symbolToRead.type) + "\t" + formatName(symbolToRead.name));
+  writeCode("read." + typeInAsm(symbolToRead.type) + " " + format(symbolToRead),
+            "read." + typeInAsm(symbolToRead.type) + " " + formatName(symbolToRead.name));
 }
 
 void appendPush(symbol_t arg, symbol_t expected)
@@ -243,8 +245,8 @@ void appendPush(symbol_t arg, symbol_t expected)
     // Jest to wartość więc robimy mov na nową zmienną
     int t = newTemp(expected.type);
     symbol_t tSym = symtable[t];
-    writeCode("mov." + typeInAsm(arg.type) + "\t" + format(arg) + "," + format(tSym) + "\t",
-              "mov." + typeInAsm(tSym.type) + "\t" + formatName(arg.name) + "," + formatName(tSym.name));
+    writeCode("mov." + typeInAsm(arg.type) + " " + format(arg) + "," + format(tSym),
+              "mov." + typeInAsm(tSym.type) + " " + formatName(arg.name) + "," + formatName(tSym.name));
     arg = tSym;
   }
   else
@@ -259,8 +261,8 @@ void appendPush(symbol_t arg, symbol_t expected)
     ref = "#";
   }
   writeCode(
-      "push.i\t" + ref + formatRef(arg) + "\t",
-      "push.i\t&" + arg.name);
+      "push.i " + ref + formatRef(arg),
+      "push.i &" + arg.name);
 }
 
 // Export the generated assembly code to a file
@@ -275,15 +277,15 @@ void exportAsm(std::string fname)
 
 int appendCall(std::string var)
 {
-  writeCode("call.i\t#" + var + "\t", "call.i\t&" + var);
+  writeCode("call.i #" + var + " ", "call.i &" + var);
   return 0; // emit address of variable containing function result
 }
 
 void appendIncsp(int incsp)
 {
   writeCode(
-      "incsp.i\t#" + std::to_string(incsp) + "\t",
-      "incsp.i\t" + std::to_string(incsp));
+      "incsp.i #" + std::to_string(incsp),
+      "incsp.i " + std::to_string(incsp));
 }
 
 void startFuncEmittion()
@@ -294,13 +296,13 @@ void startFuncEmittion()
 
 void endFuncEmittion(std::string enterOffset)
 {
-  writeCode("leave\t", "leave");
-  writeCode("return\t", "return");
+  writeCode("leave", "leave");
+  writeCode("return", "return");
 
   outf = outb.str();
   outb.str(std::string());
   outb << quick_save;
-  writeCode("enter.i\t#" + enterOffset + "\t", "enter.i\t#" + enterOffset);
+  writeCode("enter.i #" + enterOffset + " ", "enter.i #" + enterOffset);
   outb << outf;
 }
 
@@ -327,7 +329,7 @@ void appendJump(int rel_op, symbol_t left_side, symbol_t right_side, symbol_t ne
 {
   if (rel_op == NO_COMPARISON)
   {
-    writeCode("jump.i\t" + format(new_section) + "\t\t", "jump.i\t" + formatName(new_section.name));
+    writeCode("jump.i " + format(new_section), "jump.i " + formatName(new_section.name));
   }
   else
   {
@@ -335,9 +337,9 @@ void appendJump(int rel_op, symbol_t left_side, symbol_t right_side, symbol_t ne
     // if both are int
     type = (right_side.type == REAL || left_side.type == REAL ? "r" : "i");
     writeCode(
-        "j" + formatRelop(rel_op) + "." + type + "\t" + format(left_side) +
+        "j" + formatRelop(rel_op) + "." + type + " " + format(left_side) +
             "," + format(right_side) + "," + format(new_section),
-        "j" + formatRelop(rel_op) + "." + type + "\t" + formatName(left_side.name) +
+        "j" + formatRelop(rel_op) + "." + type + " " + formatName(left_side.name) +
             "," + formatName(right_side.name) + "," + formatName(new_section.name));
   }
 }

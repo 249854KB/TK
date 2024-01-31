@@ -43,13 +43,15 @@ if          {return IF;}
 then        {return THEN;}
 else        {return ELSE;}
 
+while       {return WHILE;}
+do          {return DO;}
 :=          {return ASSIGN;}
 {addop}     {yylval = getOperationToken(yytext); return ADDOP;}
 {mulop}     {yylval = getOperationToken(yytext); return MULOP;}
 {relop}     {yylval = getOperationToken(yytext); return RELOP;}
 
 {integer}   {yylval = insert(yytext, VAL, INT); return VAL;}
-{real}    {yylval = insert(yytext, VAL, REAL); return VAL;}
+{real}      {yylval = insert(yytext, VAL, REAL); return VAL;}
 {id}        {yylval = insert(yytext, ID, NONE); return ID;}
 <<EOF>>     {return DONE;}
 .           {return *yytext;}

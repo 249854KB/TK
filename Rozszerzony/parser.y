@@ -43,6 +43,9 @@ bool context = GLOBAL_CONTEXT;
 %token ELSE
 %token OR
 
+%token WHILE
+%token DO
+
 
 %token PROCEDURE
 %token FUNCTION
@@ -53,7 +56,7 @@ program:
     {
         symtable[$2].token = PROCEDURE;
         symtable[$2].global = true;
-        writeCode("jump.i\t#program", "jump.i program");
+        writeCode("jump.i #program", "jump.i program");
     } 
     '(' program_identifier_list ')' ';'
     global_variables
@@ -64,7 +67,7 @@ program:
     } 
     body
     '.' DONE {
-        writeCode("exit\t\t","exit");
+        writeCode("exit ","exit");
         return 0;
     }
     
@@ -279,7 +282,52 @@ stmt:
         }
         
     }
-    | ID '(' expression_list ')'
+    | call
+    | if_stmt
+    | while_stmt
+
+if_stmt:
+    IF expression
+    {
+        int then = newLabel();
+        int fNum = newNum("0", symtable[$2].type);
+        appendJump(E, symtable[$2], symtable[fNum], symtable[then]);
+        $2 = then;
+    }
+    THEN stmt
+    {
+        int elseL = newLabel();
+        appendJump(NO_COMPARISON, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[elseL]);
+        writeLbl(symtable[$2].name);
+        $4 = elseL;
+    }
+    ELSE stmt
+    {
+        writeLbl(symtable[$4].name);
+    }
+
+while_stmt:
+    WHILE
+        {
+            int endLoop = newLabel();
+            int loop = newLabel();
+            writeLbl(symtable[loop].name);
+            $$ = endLoop;
+            $1 = loop;
+        }
+    expression DO 
+        {
+            int fNum = newNum("0", symtable[$2].type);
+            appendJump(E, symtable[$3], symtable[fNum], symtable[$2]);
+        }
+    stmt
+        {
+            appendJump(NO_COMPARISON, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[$1]);
+            writeLbl(symtable[$2].name);
+        }
+
+call:
+    ID '(' expression_list ')'
     {
         int id = lookup(symtable[$1].name, FUNCTION);
         id = (id == -1 ? lookup(symtable[$1].name, PROCEDURE) : id);
@@ -309,68 +357,6 @@ stmt:
         
         if(function.token == FUNCTION) {
             // push result var
-            int result = newTemp(function.type);
-            appendPush(symtable[result], newArgument(function.type));
-            incsp += 4;
-            $$ = result;
-        }
-
-        appendCall(function.name);
-        
-        newNum(std::to_string(incsp), INT);
-        appendIncsp(incsp);
-    }
-    | if_stmt
-
-if_stmt:
-    IF expression
-    {
-        int then = newLabel();
-        int fNum = newNum("0", symtable[$2].type);
-        appendJump(E, symtable[$2], symtable[fNum], symtable[then]);
-        $2 = then;
-    }
-    THEN stmt
-    {
-        int elseL = newLabel();
-        appendJump(NO_COMPARISON, EMPTY_SYMBOL, EMPTY_SYMBOL, symtable[elseL]);
-        writeLbl(symtable[$2].name);
-        $4 = elseL;
-    }
-    ELSE stmt
-    {
-        writeLbl(symtable[$4].name);
-    }
-
-call:
-    ID '(' expression_list ')'
-    {
-        int id = lookup(symtable[$1].name, FUNCTION);
-        if ( id == -1 ) {
-            yyerror((symtable[$1].name + " is not callable.").c_str());
-            YYERROR;
-        }
-
-        symbol_t function = symtable[id];
-        if(function.arguments.size() < idsList.size()) {
-            yyerror("Podano za dużo argumentów do funkcji");
-            YYERROR;
-        } else if (function.arguments.size() > idsList.size()) {
-            yyerror("Podano za mało argumentów do funkcji");
-            YYERROR;
-        }
-
-        int incsp = 0; //increase stack pointer
-        for(int id = 0; id < (int)(idsList.size()); ++id, incsp += 4) {
-            symbol_t given = symtable[idsList[id]];
-            symbol_t expectedType = function.arguments[id];
-            appendPush(given, expectedType);
-            
-        }
-        idsList.clear();
-        
-        if(function.token == FUNCTION) {
-            // pushing place for the wynik
             int result = newTemp(function.type);
             appendPush(symtable[result], newArgument(function.type));
             incsp += 4;
