@@ -79,7 +79,7 @@ subprogram_declarations:
 
 
 subprogram_declaration:
-    //Or functional
+//Or functional
     subprogram_head
     {
         startFuncEmittion();
@@ -285,6 +285,7 @@ stmt:
     | call
     | if_stmt
     | while_stmt
+    | body
 
 if_stmt:
     IF expression
@@ -313,10 +314,11 @@ while_stmt:
             int loop = newLabel();
             writeLbl(symtable[loop].name);
             $$ = endLoop;
-            $1 = loop;
+            $1 = loop; // Tutaj jest wstawienie
         }
     expression DO 
         {
+            // While, wstawione, 
             int fNum = newNum("0", symtable[$2].type);
             appendJump(E, symtable[$3], symtable[fNum], symtable[$2]);
         }
@@ -403,7 +405,10 @@ simple_expression:
     {
         $$ = append3O(symtable[$1], $2, symtable[$3]);
     }
-    
+    |  simple_expression OR term
+    {
+        $$ = append3O(symtable[$1], OR_tok, symtable[$3]);
+    }
 
 
 

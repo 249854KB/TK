@@ -32,6 +32,8 @@ std::string addop(int op)
     return "add.";
   case SUB:
     return "sub.";
+  case OR_tok:
+    return "or.";
   default:
     return "ERROR";
   }
@@ -53,6 +55,8 @@ std::string mulop(int op)
     return "div.";
   case MOD:
     return "mod.";
+  case AND:
+    return "and.";
   default:
     return "ERROR";
   }
